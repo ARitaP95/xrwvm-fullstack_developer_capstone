@@ -7,9 +7,11 @@
 # from django.contrib.auth import logout
 # from django.contrib import messages
 # from datetime import datetime
-
+from django.shortcuts import render
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.models import User
+from .models import CarMake, CarModel
 from django.http import JsonResponse
-from django.contrib.auth import login, authenticate
 import logging
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -23,29 +25,67 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 
 # Create a `login_request` view to handle sign in request
+
 @csrf_exempt
 def login_user(request):
-    # Get username and password from request.POST dictionary
     data = json.loads(request.body)
-    username = data['userName']
-    password = data['password']
-    # Try to check if provide credential can be authenticated
+    username = data.get('userName')
+    password = data.get('password')
     user = authenticate(username=username, password=password)
-    data = {"userName": username}
-    if user is not None:
-        # If user is valid, call login method to login current user
+    if user:
         login(request, user)
-        data = {"userName": username, "status": "Authenticated"}
-    return JsonResponse(data)
+        return JsonResponse({"userName": username, "status": "Authenticated"})
+    else:
+        return JsonResponse({"error": "Invalid credentials"}, status=401)
 
-# Create a `logout_request` view to handle sign out request
-# def logout_request(request):
-# ...
+@csrf_exempt
+def logout_user(request):
+    logout(request)
+    return JsonResponse({"userName": "", "status": "Logged out"})
 
-# Create a `registration` view to handle sign up request
-# @csrf_exempt
-# def registration(request):
-# ...
+@csrf_exempt
+def registration(request):
+    data = json.loads(request.body)
+    username = data.get('userName')
+    password = data.get('password')
+    first_name = data.get('firstName')
+    last_name = data.get('lastName')
+    email = data.get('email')
+
+    if User.objects.filter(username=username).exists():
+        return JsonResponse({"userName": username, "error": "Already Registered"})
+    
+    user = User.objects.create_user(username=username, first_name=first_name,
+                                    last_name=last_name, password=password, email=email)
+    login(request, user)
+    return JsonResponse({"userName": username, "status": "Authenticated"})
+
+@csrf_exempt  # Se fores aceder via fetch do frontend sem CSRF token
+def get_cars(request):
+    # Conta quantos CarMake existem na base de dados
+    count = CarMake.objects.count()
+    print(f"Total Car Makes: {count}")
+    
+    # Se não houver nenhum, poderias popular com dados iniciais
+    # Assumindo que tens uma função `initiate()` para isso
+    if count == 0:
+        try:
+            from .populate import initiate
+            initiate()
+        except ImportError:
+            print("Função initiate() não encontrada")
+
+    # Seleciona todos os CarModels, incluindo o CarMake relacionado
+    car_models = CarModel.objects.select_related('car_make')
+    cars = []
+    for car_model in car_models:
+        cars.append({
+            "CarModel": car_model.name,
+            "CarMake": car_model.car_make.name
+        })
+
+    # Retorna os dados em formato JSON
+    return JsonResponse({"CarModels": cars})
 
 # # Update the `get_dealerships` view to render the index page with
 # a list of dealerships
