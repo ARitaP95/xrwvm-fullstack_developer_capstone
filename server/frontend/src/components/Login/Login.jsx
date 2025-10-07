@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-
 import "./Login.css";
 import Header from '../Header/Header';
 
@@ -9,7 +8,7 @@ const Login = ({ onClose }) => {
   const [password, setPassword] = useState("");
   const [open,setOpen] = useState(true)
 
-  let login_url = window.location.origin+"/djangoapp/login";
+  let login_url = "https://anarita9595-8000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/djangoapp/login/";
 
   const login = async (e) => {
     e.preventDefault();
