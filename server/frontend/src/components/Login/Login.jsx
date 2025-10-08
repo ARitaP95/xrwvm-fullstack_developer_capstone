@@ -3,69 +3,100 @@ import "./Login.css";
 import Header from '../Header/Header';
 
 const Login = ({ onClose }) => {
-
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
-  const [open,setOpen] = useState(true)
+  const [open, setOpen] = useState(true);
 
-  let login_url = "https://anarita9595-8000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/djangoapp/login/";
+  const login_url = "/djangoapp/api/login/"
 
   const login = async (e) => {
     e.preventDefault();
-
-    const res = await fetch(login_url, {
+    try {
+      const res = await fetch(login_url, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            "userName": userName,
-            "password": password
-        }),
-    });
-    
-    const json = await res.json();
-    if (json.status != null && json.status === "Authenticated") {
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userName, password }),
+      });
+      const json = await res.json();
+      if (json.status === "Authenticated") {
         sessionStorage.setItem('username', json.userName);
-        setOpen(false);        
+        setOpen(false);
+      } else {
+        alert("The user could not be authenticated.");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      alert("An error occurred during login.");
     }
-    else {
-      alert("The user could not be authenticated.")
-    }
-};
-
-  if (!open) {
-    window.location.href = "/";
   };
-  
+
+  if (!open) window.location.href = "/";
 
   return (
     <div>
-      <Header/>
-    <div onClick={onClose}>
+      <Header />
+      {/* Overlay do modal */}
       <div
-        onClick={(e) => {
-          e.stopPropagation();
+        className="modalOverlay"
+        style={{
+          position: "fixed",
+          top: 0, left: 0,
+          width: "100%", height: "100%",
+          backgroundColor: "rgba(0,0,0,0.5)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 1000
         }}
-        className='modalContainer'
       >
-          <form className="login_panel" style={{}} onSubmit={login}>
-              <div>
-              <span className="input_field">Username </span>
-              <input type="text"  name="username" placeholder="Username" className="input_field" onChange={(e) => setUserName(e.target.value)}/>
-              </div>
-              <div>
-              <span className="input_field">Password </span>
-              <input name="psw" type="password"  placeholder="Password" className="input_field" onChange={(e) => setPassword(e.target.value)}/>            
-              </div>
-              <div>
-              <input className="action_button" type="submit" value="Login"/>
-              <input className="action_button" type="button" value="Cancel" onClick={()=>setOpen(false)}/>
-              </div>
+        {/* Container do modal sem onClick no pai */}
+        <div
+          className="modalContainer"
+          style={{
+            backgroundColor: "#fff",
+            padding: "30px",
+            borderRadius: "10px",
+            width: "400px",
+            boxShadow: "0 5px 15px rgba(0,0,0,0.3)"
+          }}
+        >
+          <form className="login_panel" onSubmit={login}>
+            <div>
+              <span className="input_field">Username</span>
+              <input
+                type="text"
+                placeholder="Username"
+                className="input_field"
+                onChange={(e) => setUserName(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <span className="input_field">Password</span>
+              <input
+                type="password"
+                placeholder="Password"
+                className="input_field"
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <div style={{ marginTop: "20px", display: "flex", justifyContent: "space-between" }}>
+              <button type="submit" className="action_button">Login</button>
+              <button
+                type="button"
+                className="action_button"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </button>
+            </div>
+            <div style={{ marginTop: "10px", textAlign: "center" }}>
               <a className="loginlink" href="/register">Register Now</a>
+            </div>
           </form>
+        </div>
       </div>
-    </div>
     </div>
   );
 };
