@@ -16,7 +16,6 @@ const logout = async (e) => {
       let username = sessionStorage.getItem("username");
       sessionStorage.removeItem("username");
       alert("Logging out " + username + "...");
-      // Espera um pouco antes de redirecionar
       setTimeout(() => {
         window.location.href = window.location.origin;
       }, 500);

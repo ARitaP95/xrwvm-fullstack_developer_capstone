@@ -48,8 +48,8 @@ def login_user(request):
 
 @csrf_exempt
 def logout_user(request):
-    logout(request)
-    return JsonResponse({"userName": "", "status": "Logged out"})
+    logout(request)  # faz logout mesmo que não esteja autenticado
+    return JsonResponse({"status": "Logged out"})
 
 @csrf_exempt
 def registration(request):
