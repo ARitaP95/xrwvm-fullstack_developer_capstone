@@ -22,9 +22,8 @@ const Register = () => {
   const register = async (e) => {
     e.preventDefault();
 
-    let register_url = "https://anarita9595-8000.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/djangoapp/register/";
-
-
+    let register_url = window.location.origin + "/djangoapp/register/";
+    
 // Send POST request to register endpoint
     const res = await fetch(register_url, {
         method: "POST",
@@ -41,14 +40,11 @@ const Register = () => {
     });
 
     const json = await res.json();
-    if (json.status) {
-    // Save username in session and reload home
+    if (json.status === "Authenticated") {
         sessionStorage.setItem('username', json.userName);
-        window.location.href = window.location.origin;
-    }
-    else if (json.error === "Already Registered") {
-      alert("The user with same username is already registered");
-      window.location.href = window.location.origin;
+        window.location.href = "/";
+    } else if (json.error === "Already Registered") {
+        alert("The user with same username is already registered");
     }
 };
 
