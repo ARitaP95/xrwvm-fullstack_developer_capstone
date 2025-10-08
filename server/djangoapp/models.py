@@ -11,7 +11,7 @@ class CarMake(models.Model):
 
 class CarModel(models.Model):
     car_make = models.ForeignKey(CarMake, on_delete=models.CASCADE, related_name='models')  # Many-to-One relationship
-    dealer_id = models.IntegerField()  # ID do dealer (Cloudant)
+    dealer_id = models.IntegerField(null=True, blank=True)# ID do dealer (Cloudant)
     name = models.CharField(max_length=100)
     
     # Tipo do carro com escolhas limitadas

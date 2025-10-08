@@ -68,22 +68,13 @@ def registration(request):
     login(request, user)
     return JsonResponse({"userName": username, "status": "Authenticated"})
 
-@csrf_exempt  # Se fores aceder via fetch do frontend sem CSRF token
+@csrf_exempt
 def get_cars(request):
-    # Conta quantos CarMake existem na base de dados
-    count = CarMake.objects.count()
-    print(f"Total Car Makes: {count}")
-    
-    # Se não houver nenhum, poderias popular com dados iniciais
-    # Assumindo que tens uma função `initiate()` para isso
-    if count == 0:
-        try:
-            from .populate import initiate
-            initiate()
-        except ImportError:
-            print("Função initiate() não encontrada")
+    # Verifica se CarMake ou CarModel estão vazios
+    if CarMake.objects.count() == 0 or CarModel.objects.count() == 0:
+        from .populate import initiate
+        initiate()
 
-    # Seleciona todos os CarModels, incluindo o CarMake relacionado
     car_models = CarModel.objects.select_related('car_make')
     cars = []
     for car_model in car_models:
@@ -91,9 +82,9 @@ def get_cars(request):
             "CarModel": car_model.name,
             "CarMake": car_model.car_make.name
         })
-
-    # Retorna os dados em formato JSON
     return JsonResponse({"CarModels": cars})
+
+
 
 # # Update the `get_dealerships` view to render the index page with
 # a list of dealerships
