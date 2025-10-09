@@ -38,3 +38,13 @@ class CarModel(models.Model):
     def __str__(self):
         # Representação legível: marca + modelo + tipo + ano
         return f"{self.car_make.name} {self.name} ({self.type}, {self.year})"
+        
+# djangoapp/models.py
+class Review(models.Model):
+    car = models.ForeignKey(CarModel, on_delete=models.CASCADE, related_name='reviews')
+    review = models.TextField()
+    sentiment = models.CharField(max_length=20, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Review for {self.car.name} - {self.sentiment or 'No sentiment'}"
