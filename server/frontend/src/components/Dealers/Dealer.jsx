@@ -25,12 +25,18 @@ const Dealer = () => {
   const get_dealer = async () => {
     const res = await fetch(dealer_url);
     const retobj = await res.json();
-
+  
     if (retobj.status === 200) {
-      let dealerobjs = Array.from(retobj.dealer);
-      setDealer(dealerobjs[0]);
+      // Verifica se vem um único objeto ou uma lista
+      if (Array.isArray(retobj.dealer)) {
+        setDealer(retobj.dealer[0]);
+      } else {
+        setDealer(retobj.dealer);
+      }
+    } else {
+      console.error("Erro ao carregar dealer:", retobj);
     }
-  };
+  };  
 
   const get_reviews = async () => {
     const res = await fetch(reviews_url);
@@ -74,9 +80,14 @@ const Dealer = () => {
     <div style={{ margin: "20px" }}>
       <Header />
       <div style={{ marginTop: "10px" }}>
+        {dealer ? (
         <h1 style={{ color: "grey" }}>
-          {dealer.full_name} {postReview}
+            {dealer.full_name} {postReview}
         </h1>
+        ) : (
+        <h1 style={{ color: "grey" }}>A carregar dealer...</h1>
+        )}
+
         <h4 style={{ color: "grey" }}>
           {dealer['city']}, {dealer['address']}, Zip - {dealer['zip']}, {dealer['state']}
         </h4>
