@@ -40,9 +40,7 @@ jobs:
 
       - name: Install JSHint
         run: npm install jshint --global
-
+        
       - name: Run Linter
         run: |
-          echo "Running JSHint..."
-          jshint ./server/database/**/*.js || true
-          echo "✅ Linted all JS files successfully"
+          jshint ./server/database/**/*.js || echo "JSHint warnings ignored"
