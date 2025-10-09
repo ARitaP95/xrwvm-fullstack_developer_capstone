@@ -22,12 +22,11 @@ jobs:
         pip install flake8
     - name: Print working directory
       run: pwd
-    - name: Run Linter
+      - name: Run Linter
       run: |
-        pwd
-        # This command finds all Python files recursively and runs flake8 on them
-        find . -name "*.py" -exec flake8 {} +
-        echo "Linted all the python files successfully"
+      # Run JSHint with config file
+      jshint server/**/*.js --config .jshintrc
+      echo "✅ Linted all JavaScript files successfully"
   lint_js:
       name: Lint JavaScript Files
       runs-on: ubuntu-latest
