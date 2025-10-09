@@ -2,9 +2,6 @@
   "esversion": 8,
   "node": true,
   "browser": true,
-  "globals": {
-    "fetch": true,
-    "window": true,
-    "document": true
-  }
+  "undef": false,
+  "unused": false
 }
