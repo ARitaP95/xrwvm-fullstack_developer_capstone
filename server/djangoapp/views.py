@@ -1,18 +1,11 @@
 from .restapis import get_request, analyze_review_sentiments, post_review
-from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404, render, redirect
-from django.contrib import messages
-from datetime import datetime
 from django.contrib.auth import login, authenticate, logout
 from .models import CarMake, CarModel
 from django.http import JsonResponse
 import logging
 import json
 from django.views.decorators.csrf import csrf_exempt
-from .populate import initiate
-
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -21,6 +14,7 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 
 # Create a `login_request` view to handle sign in request
+
 
 @csrf_exempt
 def login_user(request):
@@ -46,10 +40,12 @@ def login_user(request):
     else:
         return JsonResponse({"error": "Invalid credentials"}, status=401)
 
+
 @csrf_exempt
 def logout_user(request):
     logout(request)  # faz logout mesmo que não esteja autenticado
     return JsonResponse({"status": "Logged out"})
+
 
 @csrf_exempt
 def registration(request):
@@ -61,12 +57,17 @@ def registration(request):
     email = data.get('email')
 
     if User.objects.filter(username=username).exists():
-        return JsonResponse({"userName": username, "error": "Already Registered"})
-    
-    user = User.objects.create_user(username=username, first_name=first_name,
-                                    last_name=last_name, password=password, email=email)
+        return JsonResponse({"userName": username,
+                             "error": "Already Registered"})
+
+    user = User.objects.create_user(username=username,
+                                    first_name=first_name,
+                                    last_name=last_name,
+                                    password=password,
+                                    email=email)
     login(request, user)
     return JsonResponse({"userName": username, "status": "Authenticated"})
+
 
 @csrf_exempt
 def get_cars(request):
@@ -84,51 +85,61 @@ def get_cars(request):
         })
     return JsonResponse({"CarModels": cars})
 
-#Update the `get_dealerships` render list of dealerships all by default, particular state if state is passed
+
 def get_dealerships(request, state="All"):
-    if(state == "All"):
+    if (state == "All"):
         endpoint = "/fetchDealers"
     else:
         endpoint = "/fetchDealers/"+state
     dealerships = get_request(endpoint)
-    return JsonResponse({"status":200,"dealers":dealerships})
+    return JsonResponse({"status": 200, "dealers": dealerships})
+
 
 def get_dealer_reviews(request, dealer_id):
     if dealer_id:
         endpoint = "/fetchReviews/dealer/"+str(dealer_id)
         reviews = get_request(endpoint)
         for review_detail in reviews:
-            response = analyze_review_sentiments(review_detail.get('review', ''))
-            
+            response = analyze_review_sentiments(
+                review_detail.get('review', ''))
+
             # Proteção caso o microserviço falhe
             if response is not None and 'sentiment' in response:
                 review_detail['sentiment'] = response['sentiment']
             else:
                 review_detail['sentiment'] = "neutral"  # valor padrão
-            
+
         return JsonResponse({"status": 200, "reviews": reviews})
     else:
         return JsonResponse({"status": 400, "message": "Bad Request"})
 
 
 def get_dealer_details(request, dealer_id):
-    if(dealer_id):
+    if (dealer_id):
         endpoint = "/fetchDealer/"+str(dealer_id)
         dealership = get_request(endpoint)
-        return JsonResponse({"status":200,"dealer":dealership})
+        return JsonResponse({"status": 200, "dealer": dealership})
     else:
-        return JsonResponse({"status":400,"message":"Bad Request"})
+        return JsonResponse({"status": 400, "message": "Bad Request"})
+
 
 def add_review(request):
-    if(request.user.is_anonymous == False):
+    if not request.user.is_anonymous:
         data = json.loads(request.body)
         try:
-            response = post_review(data)
-            return JsonResponse({"status":200})
-        except:
-            return JsonResponse({"status":401,"message":"Error in posting review"})
+            post_review(data)
+            return JsonResponse({"status": 200})
+        except Exception as e:
+            return JsonResponse({
+                "status": 401,
+                "message": f"Error in posting review: {e}"
+            })
     else:
-        return JsonResponse({"status":403,"message":"Unauthorized"})
+        return JsonResponse({
+            "status": 403,
+            "message": "Unauthorized"
+        })
+
 
 # Endpoint Django que devolve reviews do banco de dados
 def dealer_reviews(request, dealer_id):
